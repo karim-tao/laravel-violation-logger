@@ -1,0 +1,73 @@
+{
+    "name": "karim-tao/laravel-violation-logger",
+    "description": "Logs Eloquent strict mode violations (lazy loading, missing attributes, discarded attributes) to a JSON file grouped by call site, instead of throwing. Turn strict mode on, run your app, fix the list.",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "eloquent",
+        "strict-mode",
+        "lazy-loading",
+        "n+1"
+    ],
+    "homepage": "https://github.com/karim-tao/laravel-violation-logger",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Karim Tao"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/karim-tao/laravel-violation-logger/issues",
+        "source": "https://github.com/karim-tao/laravel-violation-logger"
+    },
+    "require": {
+        "php": "^8.3",
+        "illuminate/database": "^12.0 || ^13.0",
+        "illuminate/support": "^12.0 || ^13.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.29",
+        "orchestra/testbench": "^10.0 || ^11.0",
+        "pestphp/pest": "^4.4",
+        "pestphp/pest-plugin-type-coverage": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "KarimTao\\LaravelViolationLogger\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "KarimTao\\LaravelViolationLogger\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "KarimTao\\LaravelViolationLogger\\ViolationLoggerServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "lint": "pint",
+        "test:lint": "pint --test",
+        "test:static": "phpstan analyse",
+        "test:type-coverage": "pest --type-coverage --min=100",
+        "test:unit": "pest",
+        "test": [
+            "@test:lint",
+            "@test:static",
+            "@test:type-coverage",
+            "@test:unit"
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
