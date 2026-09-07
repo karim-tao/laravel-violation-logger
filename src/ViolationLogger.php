@@ -14,7 +14,7 @@ final class ViolationLogger
     public function log(string $type, Model $model, array|string $detail): void
     {
         $path = $this->path;
-        $class = get_class($model);
+        $class = $model::class;
         $callSite = $this->findCallSite();
         $details = (array) $detail;
 
@@ -41,13 +41,9 @@ final class ViolationLogger
 
             $data = $contents ? (json_decode($contents, true) ?? []) : [];
 
-            $existing = $data[$callSite][$class][$type] ?? [];
-
-            $data[$callSite][$class][$type] = collect($existing)
-                ->merge($details)
-                ->unique()
-                ->values()
-                ->all();
+            foreach ($details as $item) {
+                $data[$callSite][$class][$type][$item] = ($data[$callSite][$class][$type][$item] ?? 0) + 1;
+            }
 
             if (! ftruncate($handle, 0) || rewind($handle) === false) {
                 throw new ViolationLoggerException("Cannot reset file pointer: {$path}");

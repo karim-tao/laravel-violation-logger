@@ -4,25 +4,20 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/karim-tao/laravel-violation-logger)](https://packagist.org/packages/karim-tao/laravel-violation-logger)
 [![License](https://img.shields.io/packagist/l/karim-tao/laravel-violation-logger)](https://packagist.org/packages/karim-tao/laravel-violation-logger)
 
-Logs Eloquent strict mode violations to a JSON file instead of throwing: lazy loading, missing attributes and discarded attributes, grouped by the line of your code that caused them.
+Logs Eloquent strict mode violations to a JSON file instead of throwing, with the line that caused them and how many times:
 
 ```json
 {
     "app/Http/Controllers/PostController.php:24": {
         "App\\Models\\Post": {
-            "lazy": ["author", "comments"]
-        }
-    },
-    "app/Exports/PostsExport.php:41": {
-        "App\\Models\\Post": {
-            "missing": ["body"],
-            "discarded": ["rating"]
+            "lazy": { "author": 30 },
+            "missing": { "body": 1 }
         }
     }
 }
 ```
 
-Turn strict mode on, run your app or your test suite, and fix the list.
+Run your test suite, fix the list.
 
 ## Installation
 
@@ -38,40 +33,28 @@ That's it — the `ViolationLoggerServiceProvider` is auto-discovered, so you're
 
 ## Usage
 
-Enable Eloquent strict mode where you want it, typically outside production:
+Turn strict mode on:
 
 ```php
 // app/Providers/AppServiceProvider.php
 
-use Illuminate\Database\Eloquent\Model;
-
-public function boot(): void
-{
-    Model::shouldBeStrict(! $this->app->isProduction());
-}
+Model::shouldBeStrict(! $this->app->isProduction());
 ```
 
-From now on a violation no longer throws: it is appended to `storage/logs/violations.json` and the code carries on. Every entry is keyed by the file and line of your application that triggered it, then by model and by type:
+Violations now go to `storage/logs/violations.json` instead of throwing.
 
-| Type | Laravel setting | What it means |
+| Type | Switch | What it means |
 | --- | --- | --- |
-| `lazy` | `preventLazyLoading` | a relation was loaded outside of eager loading (N+1) |
-| `missing` | `preventAccessingMissingAttributes` | an attribute was read that the query did not select |
-| `discarded` | `preventSilentlyDiscardingAttributes` | a mass assigned attribute was dropped because it is not fillable |
+| `lazy` | `Model::preventLazyLoading()` | a relation was loaded outside of eager loading (N+1) |
+| `missing` | `Model::preventAccessingMissingAttributes()` | an attribute was read that the query did not select |
+| `discarded` | `Model::preventSilentlyDiscardingAttributes()` | a mass assigned attribute was dropped because it is not fillable |
 
-The same violation logged twice is stored once. The file grows across requests and commands until you delete it, so a full test run leaves you a complete list of what to fix.
+## How it works
 
-Frames from `vendor/` and from any other Composer dependency are skipped when looking for the call site, so the line always points at your own code.
-
-### Keeping the file empty
-
-Delete the file, run your suite, and fail if it is back:
-
-```bash
-rm -f storage/logs/violations.json
-php artisan test
-test ! -f storage/logs/violations.json || (cat storage/logs/violations.json && exit 1)
-```
+- The provider registers Laravel's own `handleLazyLoadingViolationUsing`, `handleMissingAttributeViolationUsing` and `handleDiscardedAttributeViolationUsing` callbacks, so nothing runs unless strict mode is on.
+- The call site is the first frame of the backtrace outside `vendor/` and outside any other Composer dependency, so it always points at your code.
+- Every violation is written straight away, under an exclusive lock, so requests, queued jobs and test workers can share the file.
+- Counts add up until you delete the file.
 
 ## Testing
 

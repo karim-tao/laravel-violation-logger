@@ -13,12 +13,12 @@ it('groups violations by call site, model and type', function () {
     $this->logger->log('missing', new Post, 'title');
 
     expect(violations())->toBe([
-        'tests/Unit/ViolationLoggerTest.php:' . $first => [Post::class => ['lazy' => ['author']]],
-        'tests/Unit/ViolationLoggerTest.php:' . $second => [Post::class => ['missing' => ['title']]],
+        'tests/Unit/ViolationLoggerTest.php:' . $first => [Post::class => ['lazy' => ['author' => 1]]],
+        'tests/Unit/ViolationLoggerTest.php:' . $second => [Post::class => ['missing' => ['title' => 1]]],
     ]);
 });
 
-it('merges details of the same call site, model and type without duplicates', function () {
+it('counts the occurrences of each detail per call site, model and type', function () {
     foreach ([1, 2] as $attempt) {
         $first = __LINE__ + 1;
         $this->logger->log('discarded', new Post, ['body', 'rating']);
@@ -27,13 +27,13 @@ it('merges details of the same call site, model and type without duplicates', fu
     }
 
     expect(violations())->toBe([
-        'tests/Unit/ViolationLoggerTest.php:' . $first => [Post::class => ['discarded' => ['body', 'rating']]],
-        'tests/Unit/ViolationLoggerTest.php:' . $second => [Post::class => ['discarded' => ['body']]],
+        'tests/Unit/ViolationLoggerTest.php:' . $first => [Post::class => ['discarded' => ['body' => 2, 'rating' => 2]]],
+        'tests/Unit/ViolationLoggerTest.php:' . $second => [Post::class => ['discarded' => ['body' => 2]]],
     ]);
 });
 
 it('keeps the existing file content', function () {
-    file_put_contents(storage_path('logs/violations.json'), json_encode(['app/Http/Controllers/PostController.php:12' => [Post::class => ['lazy' => ['author']]]]));
+    file_put_contents(storage_path('logs/violations.json'), json_encode(['app/Http/Controllers/PostController.php:12' => [Post::class => ['lazy' => ['author' => 3]]]]));
 
     $line = __LINE__ + 1;
     $this->logger->log('lazy', new Post, 'author');
@@ -47,7 +47,7 @@ it('writes readable json', function () {
 
     expect(file_get_contents(storage_path('logs/violations.json')))
         ->toContain("\n    \"tests/Unit/ViolationLoggerTest.php:" . $line . '"')
-        ->toContain("\"lazy\": [\n");
+        ->toContain("\"lazy\": {\n");
 });
 
 it('throws when the file cannot be opened', function () {

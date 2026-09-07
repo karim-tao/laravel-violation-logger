@@ -9,7 +9,7 @@ it('logs attributes discarded by mass assignment instead of throwing', function 
     expect($post->exists)->toBeTrue()
         ->and(violations())->toBe([
             'tests/Feature/DiscardedAttributeViolationTest.php:' . $line => [
-                Post::class => ['discarded' => ['body', 'rating']],
+                Post::class => ['discarded' => ['body' => 1, 'rating' => 1]],
             ],
         ]);
 });

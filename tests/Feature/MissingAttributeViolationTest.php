@@ -11,7 +11,7 @@ it('logs an attribute that was not selected instead of throwing', function () {
     expect($title)->toBeNull()
         ->and(violations())->toBe([
             'tests/Feature/MissingAttributeViolationTest.php:' . $line => [
-                Post::class => ['missing' => ['title']],
+                Post::class => ['missing' => ['title' => 1]],
             ],
         ]);
 });

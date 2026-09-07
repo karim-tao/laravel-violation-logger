@@ -1,13 +1,13 @@
 {
     "name": "karim-tao/laravel-violation-logger",
-    "description": "Logs Eloquent strict mode violations (lazy loading, missing attributes, discarded attributes) to a JSON file grouped by call site, instead of throwing. Turn strict mode on, run your app, fix the list.",
+    "description": "Logs Laravel and Eloquent strict mode violations to a JSON file, grouped by the line that caused them, instead of throwing. Turn strict mode on, run your app, fix the list.",
     "type": "library",
     "keywords": [
         "laravel",
         "eloquent",
         "strict-mode",
         "lazy-loading",
-        "n+1"
+        "n-plus-one"
     ],
     "homepage": "https://github.com/karim-tao/laravel-violation-logger",
     "license": "MIT",
